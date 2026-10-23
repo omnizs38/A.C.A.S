@@ -1,1 +1,6 @@
 **/desktop.ini
+# Local Python engine environments and caches
+__pycache__/
+*.py[cod]
+.venv/
+maia2_models/

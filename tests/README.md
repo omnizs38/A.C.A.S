@@ -51,3 +51,26 @@ The fixtures use Lichess's `body[data-user]`, `.game__meta__players .player.whit
 For baseline comparisons, `ACAS_SOURCE`, `ACAS_SETUP_SOURCE`, and `ACAS_BRIDGE_SOURCE` can point to older copies of the corresponding production files. Tests read production code at runtime; they do not contain a replacement implementation of the detection logic.
 
 These tests do not exercise a live logged-in Lichess session, chess-engine binaries, or the full application stress-test harness in `app/dev`. Anonymous sessions without identifying metadata retain orientation-based player selection. Analysis/study turn detection and full initial FEN metadata reconstruction are outside this change.
+
+## Python engine support
+
+`python-engine-launch.test.mjs` covers native-launch compatibility, saved Python
+runtime validation, paths containing spaces, and a real Python UCI subprocess.
+Set `PYTHON` if needed; defaults to `python3` (`python` on Windows).
+
+Maia-2 protocol tests use fake inference without PyTorch or weights:
+
+```sh
+python -m pip install chess==1.11.2
+python -m unittest discover -s tests -p 'test_maia2_uci.py' -v
+```
+
+See [the adapter guide](../appServer/python/README.md) for real model warmup.
+
+`python-engine-ui.test.cjs` runs against the actual local-server HTML and prompt
+code in Chromium, with IPC mocked. It covers interpreter/name submission,
+cancellation, and native-engine compatibility:
+
+```sh
+CHROMIUM_PATH=/usr/bin/chromium node --test tests/python-engine-ui.test.cjs
+```

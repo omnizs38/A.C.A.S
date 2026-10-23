@@ -138,7 +138,16 @@ addEngineBtn.onclick = async () => {
         path: filePath
     };
 
-    const title = await AcasPrompt.prompt('Enter a custom name for this engine (optional):', fileInfo.name) || fileInfo.name;
+    if(/\.py$/i.test(filePath)) {
+        const pythonExecutable = await AcasPrompt.prompt(
+            'Python interpreter (command on PATH or full path to your virtual environment executable, without quotes):',
+            'python', { showCancel: true });
+        if(pythonExecutable === null) return;
+        fileInfo.pythonExecutable = pythonExecutable.trim();
+    }
+
+    const title = await AcasPrompt.prompt('Engine name:', fileInfo.name, { showCancel: true });
+    if(title === null) return;
 
     try {
         const result = await window.engineAPI.addEngine(fileInfo, title);
@@ -215,6 +224,7 @@ async function renderEngineGrid(engines) {
         const engineIcon = document.createElement('i');
         engineIcon.className = 'bi bi-cpu';
         engineIcon.setAttribute('aria-hidden', 'true');
+        engineIcon.title = engine.runtime === 'python' ? `Python: ${engine.pythonExecutable}` : 'Native UCI engine';
         const status = document.createElement('span');
         status.className = 'engine-status';
         status.textContent = 'Idle';
@@ -341,7 +351,7 @@ async function renderEngineGrid(engines) {
     if(!savedEngines.length) {
         const emptyState = document.createElement('div');
         emptyState.className = 'engine-empty-state';
-        emptyState.innerHTML = '<i class="bi bi-cpu" aria-hidden="true"></i><b>No engines added yet</b><span>Add an engine binary, then select it in the A.C.A.S web GUI.</span>';
+        emptyState.innerHTML = '<i class="bi bi-cpu" aria-hidden="true"></i><b>No engines added yet</b><span>Add a native UCI engine or Python (.py) script, then select it in the A.C.A.S web GUI.</span>';
         engineUiGrid.appendChild(emptyState);
     }
     refreshEngineCards(runningEngines);

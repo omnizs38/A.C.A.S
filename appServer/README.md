@@ -4,6 +4,12 @@ Please visit the GitHub for more details: https://github.com/Psyyke/A.C.A.S
 
 This file basically just lists the LICENSE and the dependencies A.C.A.S might use.
 
+## Python engines / Maia-2
+
+Click **ADD ENGINE** to select a native engine or `.py` UCI script. For Python
+virtual environment setup, the Maia-2 adapter, and troubleshooting, see
+[Python engines and Maia-2](python/README.md).
+
 ## Developing / Building
 
 1. `npm install`

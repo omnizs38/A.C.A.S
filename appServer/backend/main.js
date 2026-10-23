@@ -120,8 +120,8 @@ app.whenReady().then(() => {
 		const result = await dialog.showOpenDialog(mainWindow, {
 			properties: ['openFile'],
 			filters: [{
-				name: 'Executables',
-				extensions: getExecutableExtensions()
+				name: 'UCI engines (native or Python)',
+				extensions: [...getExecutableExtensions(), 'py']
 			}]
 		});
 

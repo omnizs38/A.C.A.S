@@ -1,0 +1,2 @@
+# Maia-2 supports CPython 3.10–3.12. Includes python-chess and PyTorch.
+maia2==0.11.0

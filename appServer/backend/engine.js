@@ -2,6 +2,7 @@ import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import Store from 'electron-store';
+import { normalizeEngineRuntime, buildEngineLaunch } from './engineLaunch.js';
 
 import { sendUciLineToClient, sendEngineDeathCertificateToClient } from './server.js';
 import { verifyLaunchParams, createEngineID, toast } from './util.js';
@@ -322,18 +323,23 @@ async function startEngineProcess(enginePath, identifierObj) {
         const existingEngine = findAliveEngineObj(identifierObj);
         if(existingEngine) killSpecificEngine(identifierObj, 'Relaunch');
 
-        if(process.platform !== 'win32') {
+        // Runtime settings come only from the locally saved library, never WebSocket input.
+        const savedEngine = savedEngines.find(engine => engine.path === enginePath);
+        const launch = buildEngineLaunch(savedEngine || { path: enginePath },
+            verifyLaunchParams(identifierObj.launchParams));
+
+        if(launch.runtime !== 'python' && process.platform !== 'win32') {
             try { fs.chmodSync(enginePath, 0o755); } catch (e) {}
         }
 
         return await new Promise((resolve, reject) => {
             let engineProcess;
             try {
-                const args = verifyLaunchParams(identifierObj.launchParams);
-
-                engineProcess = spawn(enginePath, args, {
+                engineProcess = spawn(launch.command, launch.args, {
                     stdio: ['pipe', 'pipe', 'pipe'],
-                    cwd: path.dirname(enginePath)
+                    cwd: launch.cwd,
+                    shell: false,
+                    env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
                 });
 
                 let settled = false;
@@ -471,7 +477,15 @@ async function startEngineProcess(enginePath, identifierObj) {
 
 export async function addEngine(fileInfo, title = fileInfo?.name) {
     if(!fileInfo?.path) return 'Missing file path';
-    if(!fs.existsSync(fileInfo.path)) return `Engine file not found: ${fileInfo.path}`;
+    if(!fs.existsSync(fileInfo.path) || !fs.statSync(fileInfo.path).isFile())
+        return `Engine file not found: ${fileInfo.path}`;
+
+    let runtime;
+    try {
+        runtime = normalizeEngineRuntime(fileInfo);
+    } catch(error) {
+        return error.message;
+    }
 
     const isDuplicate = savedEngines.some(engine => engine.path === fileInfo.path);
     if(isDuplicate) return `Engine already exists: ${fileInfo.name}`;
@@ -482,7 +496,8 @@ export async function addEngine(fileInfo, title = fileInfo?.name) {
         title,
         name: fileInfo.name,
         path: fileInfo.path,
-        engineId
+        engineId,
+        ...runtime
     });
 
     store.set(chessEnginesStorageKey, savedEngines);

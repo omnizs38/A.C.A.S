@@ -28,6 +28,11 @@
 		},
 		"extraFiles": [
 			{
+				"from": "python",
+				"to": "python",
+				"filter": ["**/*", "!**/__pycache__/**", "!**/*.pyc", "!**/maia2_models/**", "!**/.venv/**"]
+			},
+			{
 				"from": "README.md",
 				"to": "./README.md"
 			}
