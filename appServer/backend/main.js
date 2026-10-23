@@ -1,8 +1,9 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import Store from 'electron-store';
 import path from 'path';
 import os from 'os';
+import { DesktopRuntime } from './desktop/runtime.js';
 
 import { killAllEngines, killEngine, clearCache, addEngine, getSavedEngines, renderEngineGrid,
 	removeEngine, renameEngine, sendManualUciToEngine } from './engine.js';
@@ -15,6 +16,11 @@ const __dirname = path.dirname(__filename);
 
 const store = new Store();
 let portRestartPending = false;
+let desktopRuntime = null;
+const preferredMode = process.argv.includes('--web-mode') ? 'web'
+    : process.argv.includes('--desktop') ? 'desktop'
+    : store.get('applicationMode', process.platform === 'win32' ? 'desktop' : 'web');
+const applicationMode = preferredMode === 'desktop' ? 'desktop' : 'web';
 
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 app.commandLine.appendSwitch('disable-raf-throttling');
@@ -38,14 +44,17 @@ function createWindow() {
 		height: 800,
 		icon: path.join(__dirname, '..', 'ui', 'favicon.ico'),
 		webPreferences: {
-			preload: path.join(__dirname, 'preload.js'),
+			preload: path.join(__dirname, 'preload.mjs'),
 			contextIsolation: true,
 			nodeIntegration: false,
 			sandbox: false
 		}
 	});
 
-	win.loadFile('./ui/index.html');
+	win.loadFile(path.join(__dirname, '..', 'ui', 'index.html'));
+    // A click-through overlay is also a BrowserWindow; it must not keep the app
+    // alive after the user closes the main desktop window.
+    win.once('closed', () => { if(applicationMode === 'desktop') app.quit(); });
 
 	return win;
 }
@@ -64,7 +73,36 @@ function createAndTrackWindow({ startServer = false } = {}) {
 }
 
 app.whenReady().then(() => {
-	createAndTrackWindow({ 'startServer': true });
+	createAndTrackWindow({ 'startServer': applicationMode === 'web' });
+    desktopRuntime = new DesktopRuntime({ mainWindow: () => mainWindow, mode: applicationMode,
+        settings: store.get('desktopSettings', {}) });
+    const trusted = event => {
+        if(event.sender !== mainWindow?.webContents || event.senderFrame !== mainWindow.webContents.mainFrame
+            || event.senderFrame.url !== pathToFileURL(path.join(__dirname, '..', 'ui', 'index.html')).href)
+            throw new Error('Untrusted desktop IPC sender.');
+    };
+    const handleDesktop = (name, handler) => ipcMain.handle(`desktop:${name}`, (event,...args) => {
+        trusted(event);
+        return handler(...args);
+    });
+    handleDesktop('state', () => desktopRuntime.state());
+    handleDesktop('start', async input => {
+        const state = await desktopRuntime.start(input);
+        store.set('desktopSettings', state.settings);
+        return state;
+    });
+    handleDesktop('stop', () => desktopRuntime.stop());
+    handleDesktop('capture', () => desktopRuntime.capture());
+    handleDesktop('pause', () => desktopRuntime.pause());
+    handleDesktop('analyze', input => desktopRuntime.analyze(input));
+    handleDesktop('overlay', input => desktopRuntime.draw(input));
+    handleDesktop('mode', mode => {
+        if(!['desktop', 'web'].includes(mode)) throw new Error('Unknown application mode.');
+        if(mode === 'desktop' && process.platform !== 'win32') throw new Error('Desktop mode requires Windows.');
+        store.set('applicationMode', mode);
+        app.relaunch({ args: process.argv.slice(1).filter(arg => !['--web-mode','--desktop'].includes(arg)) });
+        app.quit();
+    });
 
 	ipcMain.handle('killAllEngines',
 		async (event) => killAllEngines());
@@ -134,6 +172,7 @@ app.whenReady().then(() => {
 });
 
 app.on('before-quit', () => {
+    desktopRuntime?.dispose().catch(console.error);
 	killAllEngines();
 	stopLocalWSS();
 });

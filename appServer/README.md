@@ -4,6 +4,12 @@ Please visit the GitHub for more details: https://github.com/Psyyke/A.C.A.S
 
 This file basically just lists the LICENSE and the dependencies A.C.A.S might use.
 
+## Windows Desktop mode
+
+Windows now defaults to an experimental no-userscript screen mode. Select an
+engine and supported piece theme, then watch a display for a board. The legacy
+Web mode is preserved behind a mode switch. See [Desktop setup and limitations](DESKTOP.md).
+
 ## Python engines / Maia-2
 
 Click **ADD ENGINE** to select a native engine or `.py` UCI script. For Python

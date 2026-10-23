@@ -6,6 +6,9 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "electron .",
+		"start:desktop": "electron . --desktop",
+		"start:web": "electron . --web-mode",
+		"test:desktop-smoke": "electron scripts/desktop-smoke.mjs --desktop",
 		"build": "electron-builder --publish never"
 	},
 	"keywords": [],

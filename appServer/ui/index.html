@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./css/bootstrap.css">
     <link rel="stylesheet" href="./css/acas-toast.css">
     <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./desktop/desktop.css">
     <link rel="stylesheet" href="./css/custom-scroll.css">
     <link rel="preload" href="./fonts/Mona-Sans.woff2" as="font" type="font/woff2">
     <link rel="preload" href="./fonts/Rubik.ttf" as="font" type="font/ttf">
@@ -37,6 +38,42 @@
         </div>
     </div>
 </div>
+<div id="application-mode-bar" hidden>
+    <span id="application-mode-label">Desktop mode · no userscript</span>
+    <button id="application-mode-switch" class="acas-fancy-button" type="button">Switch mode</button>
+</div>
+<section id="desktop-panel" aria-labelledby="desktop-heading" hidden>
+    <p class="desktop-kicker">LOCAL SCREEN ANALYSIS</p>
+    <div class="desktop-title"><h2 id="desktop-heading">Wait for the board. See the move.</h2></div>
+    <form id="desktop-form">
+        <fieldset id="desktop-settings" style="border:0;padding:0;margin:0">
+            <div class="desktop-fields">
+                <label>Engine<select id="desktop-engine" required><option value="">Add an engine below</option></select></label>
+                <label>Screen<select id="desktop-display" required></select></label>
+                <label>Piece theme<select id="desktop-theme"><option value="cburnett">Cburnett</option><option value="merida">Merida</option></select></label>
+                <label>Maximum depth<input id="desktop-depth" type="number" min="1" max="100" value="14" required></label>
+                <label>Analysis time (ms)<input id="desktop-movetime" type="number" min="100" max="60000" step="100" value="1000" required></label>
+                <label>Capture interval (ms)<input id="desktop-interval" type="number" min="500" max="10000" step="100" value="1200" required></label>
+            </div>
+            <details><summary>Engine options and starting position</summary>
+                <div class="desktop-fields">
+                    <label class="desktop-wide">UCI options (JSON)<textarea id="desktop-options" rows="2" spellcheck="false" placeholder='{"MultiPV":2,"EloSelf":1500}'>{}</textarea></label>
+                    <label class="desktop-wide">Engine launch parameters<input id="desktop-launch" placeholder="--device=cpu" spellcheck="false"></label>
+                    <label class="desktop-wide">Full starting FEN (leave empty for a new standard game)<input id="desktop-fen" spellcheck="false" placeholder="Standard starting position"></label>
+                </div>
+                <p class="desktop-note" id="desktop-options-help">Use only UCI options supported by the selected engine.</p>
+            </details>
+        </fieldset>
+        <div class="desktop-actions">
+            <button id="desktop-start" class="acas-fancy-button" type="submit">WATCH SCREEN</button>
+            <button id="desktop-stop" class="acas-fancy-button" type="button" disabled>STOP</button>
+            <button id="desktop-reset" class="acas-fancy-button" type="button" disabled>RESET POSITION</button>
+        </div>
+    </form>
+    <p id="desktop-status" role="status" aria-live="polite">Choose an engine, then start watching.</p>
+    <output id="desktop-fen-output" aria-label="Tracked position"></output>
+    <p class="desktop-note">Windows · standard 2D chess · supported themes only. Keep the board fully visible. Screenshots stay in memory on this computer. Use only where engine assistance is allowed.</p>
+</section>
 <header id="server-controls">
     <div class="header-buttons-container">
         <div>
@@ -90,6 +127,7 @@
 <script src="./js/utils.js"></script>
 <script src="./js/console.js"></script>
 <script src="./index.js"></script>
+<script type="module" src="./desktop/controller.js"></script>
 
 </body>
 </html>

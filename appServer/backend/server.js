@@ -1,4 +1,5 @@
 import { toast } from './util.js';
+import { engineEvents } from './engineEvents.js';
 import { mainWindow } from './main.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
@@ -320,6 +321,7 @@ export function sendEnginesList() {
 
 // Called from engine.js
 export function sendUciLineToClient(line, engineId, profileName, instanceId, details = {}) {
+    engineEvents.emit('uci', { line, engineId, profileName, instanceId, ...details });
     if(!profileName) {
         console.error('No profileName given to send UCI line function, cannot send!'); return; }
     if(!engineId) {
@@ -336,6 +338,7 @@ export function sendUciLineToClient(line, engineId, profileName, instanceId, det
 // Called from engine.js
 // Expected death certificate includes reason, fen, profileName, engineId and instanceId
 export function sendEngineDeathCertificateToClient(reason = 'not given', fen, engineId, profileName, instanceId, details = {}) {
+    engineEvents.emit('death', { reason, fen, engineId, profileName, instanceId, ...details });
     if(!profileName) {
         console.error('No profileName given to sendEngineDeathCertificate function, cannot send!'); return; }
     if(!instanceId){

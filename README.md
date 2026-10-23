@@ -17,6 +17,7 @@ A.C.A.S (Advanced Chess Assistance System) is an open-source chess assistant (**
 
 * Many built in WebAssembly engines (faster than JS)
 * External engines (via an installable localhost server), including [Python UCI engines and Maia-2](appServer/python/README.md)
+* Experimental [Windows Desktop screen mode](appServer/DESKTOP.md): no userscript, local board recognition, click-through move arrows
 * Supports top chess sites (chess.com, lichess.org, etc.)
 * Multiple suggestions, arrows, variants, fonts
 * Multi-engine support, each with own settings

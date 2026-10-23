@@ -1,0 +1,33 @@
+[hidden] { display:none !important; }
+#desktop-panel { margin:16px 20px 8px; padding:20px; border:1px solid #424242; border-radius:10px; background:#202020; flex-shrink:0; }
+.desktop-title { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.desktop-title h2 { margin:0; font-size:20px; }
+.desktop-kicker { color:#9da5a0; font-size:12px; letter-spacing:.1em; margin:0 0 8px; }
+.desktop-fields { display:grid; grid-template-columns:1fr 1fr; gap:12px 16px; margin:16px 0; }
+.desktop-fields label { display:flex; flex-direction:column; gap:6px; color:#c6c6c6; font-size:13px; }
+#desktop-panel input,#desktop-panel select,#desktop-panel textarea { box-sizing:border-box; width:100%; border:1px solid #555; border-radius:6px; background:#151515; color:#eee; padding:9px 10px; min-height:40px; font-size:14px; }
+#desktop-panel textarea { font-family:monospace; resize:vertical; }
+#desktop-panel input:focus-visible,#desktop-panel select:focus-visible,#desktop-panel textarea:focus-visible { outline:2px solid #69a8ff; outline-offset:2px; }
+.desktop-wide { grid-column:1/-1; }
+.desktop-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.desktop-actions button { min-height:42px; }
+#desktop-start { background:#b9e8d4; color:#10291d; border-color:#b9e8d4; }
+#desktop-status { margin:14px 0 4px; font-size:14px; color:#c5dfd1; overflow-wrap:anywhere; }
+#desktop-status[data-error=true] { color:#ffb0ac; }
+.desktop-note { margin:6px 0 0; font-size:12px; color:#aaa; line-height:1.5; }
+#desktop-panel details { margin-bottom:16px; }
+#desktop-panel summary { cursor:pointer; color:#c6c6c6; padding:4px 0; }
+#desktop-fen-output { display:block; margin-top:6px; font-family:monospace; font-size:11px; overflow-wrap:anywhere; color:#9c9c9c; }
+#application-mode-bar { display:flex; align-items:center; justify-content:space-between; margin:12px 20px 0; gap:12px; flex-shrink:0; color:#aaa; font-size:12px; }
+#application-mode-bar button { padding:6px 12px; }
+body.desktop-mode { overflow-y:auto; }
+body.desktop-mode #consoles-container { flex:none; min-height:180px; }
+@media(max-width:480px) { #desktop-panel{margin:12px;padding:16px}.desktop-fields{grid-template-columns:1fr}.desktop-title{align-items:flex-start}#application-mode-bar{margin:12px} }
+
+html:has(body.desktop-mode) { height:auto; min-height:100%; overflow-y:auto; }
+body.desktop-mode { height:auto; min-height:100vh; overflow:visible; }
+body.desktop-mode .engine-grid { flex-shrink:0; }
+@media(max-width:480px) {
+    body.desktop-mode #acas-is-free-reminder { display:none; }
+    body.desktop-mode #acas-header { flex-shrink:0; }
+}

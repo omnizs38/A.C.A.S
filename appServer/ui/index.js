@@ -173,7 +173,8 @@ function refreshEngineCards(aliveEngineProcesses) {
         if(!processes.length) {
             const idleText = document.createElement('span');
             idleText.className = 'engine-idle-hint';
-            idleText.textContent = 'Ready to use from the web GUI';
+            idleText.textContent = document.body.classList.contains('desktop-mode')
+                ? 'Ready for desktop analysis' : 'Ready to use from the web GUI';
             processList.appendChild(idleText);
         }
         processes.forEach(({ identifierObj }) => {

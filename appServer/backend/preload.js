@@ -40,3 +40,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	getVersion: () => ipcRenderer.invoke('getAppVersion'),
 	openExternal: (url) => shell.openExternal(url)
 });
+
+contextBridge.exposeInMainWorld('desktopAPI', {
+    state: () => ipcRenderer.invoke('desktop:state'),
+    start: input => ipcRenderer.invoke('desktop:start', input),
+    stop: () => ipcRenderer.invoke('desktop:stop'),
+    capture: () => ipcRenderer.invoke('desktop:capture'),
+    pause: () => ipcRenderer.invoke('desktop:pause'),
+    analyze: input => ipcRenderer.invoke('desktop:analyze', input),
+    overlay: input => ipcRenderer.invoke('desktop:overlay', input),
+    mode: mode => ipcRenderer.invoke('desktop:mode', mode),
+    onEvent: callback => ipcRenderer.on('desktop:event', (_event, data) => callback(data))
+});

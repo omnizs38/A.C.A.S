@@ -1,0 +1,65 @@
+name: Desktop mode regression tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - 'appServer/**'
+      - 'tests/**'
+      - '.github/workflows/desktop-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-desktop:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: |
+          New-Item -ItemType Directory -Force test-logs | Out-Null
+          npm --prefix appServer ci --no-audit --no-fund --loglevel=error
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm install --no-save --package-lock=false playwright --loglevel=error
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npx playwright install chromium
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m pip install chess==1.11.2 --quiet
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Node regressions
+        run: |
+          node --test --test-isolation=none tests/*.test.mjs *> test-logs/node.log
+          if ($LASTEXITCODE -ne 0) { Get-Content test-logs/node.log -Tail 35; exit 1 }
+          Get-Content test-logs/node.log -Tail 9
+      - name: Recognition and desktop UI
+        run: |
+          node --test tests/desktop-vision.test.cjs tests/desktop-ui.test.cjs tests/python-engine-ui.test.cjs tests/load-engine.test.cjs *> test-logs/browser.log
+          if ($LASTEXITCODE -ne 0) { Get-Content test-logs/browser.log -Tail 35; exit 1 }
+          Get-Content test-logs/browser.log -Tail 9
+      - name: Maia UCI protocol
+        run: |
+          python -m unittest discover -s tests -p test_maia2_uci.py -v *> test-logs/python.log
+          if ($LASTEXITCODE -ne 0) { Get-Content test-logs/python.log -Tail 35; exit 1 }
+          Get-Content test-logs/python.log -Tail 5
+      - name: Electron preload and IPC smoke
+        run: |
+          & .\appServer\node_modules\.bin\electron.cmd .\appServer\scripts\desktop-smoke.mjs --desktop *> test-logs/electron.log
+          if ($LASTEXITCODE -ne 0) { Get-Content test-logs/electron.log -Tail 35; exit 1 }
+          Get-Content test-logs/electron.log -Tail 8
+      - name: Upload complete test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-desktop-test-logs
+          path: test-logs/
+          retention-days: 14

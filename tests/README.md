@@ -74,3 +74,27 @@ cancellation, and native-engine compatibility:
 ```sh
 CHROMIUM_PATH=/usr/bin/chromium node --test tests/python-engine-ui.test.cjs
 ```
+
+## Desktop screen mode
+
+`desktop-session.test.mjs` covers direct UCI transport, draining stopped searches,
+stale-result suppression, settings validation, legal history (including two-ply
+reconciliation, castling, en passant, promotion), orientation and arrow geometry.
+
+`desktop-vision.test.cjs` renders synthetic boards from the real bundled SVGs;
+`desktop-ui.test.cjs` exercises the full capture/recognition/tracking/controller
+flow with mocked Electron IPC, legal move filtering, board loss, stopping and
+responsive layout. Run them with the same Playwright/Chromium setup above:
+
+```sh
+node --test tests/desktop-vision.test.cjs tests/desktop-ui.test.cjs
+```
+
+For the actual Electron preload/IPC check, from `appServer`:
+
+```sh
+npm run test:desktop-smoke
+```
+
+These tests are not a substitute for manual Windows capture/overlay and real
+board-theme validation. See [the Desktop guide](../appServer/DESKTOP.md).
